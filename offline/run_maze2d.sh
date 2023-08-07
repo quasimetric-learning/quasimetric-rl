@@ -3,7 +3,6 @@
 # default args are for the online GCRL setting, so we need to change some of them
 
 args=(
-    ${@}
     env.kind=d4rl
     num_workers=12
     # encoder
@@ -23,5 +22,5 @@ args=(
     agent.actor.losses.behavior_cloning.weight=0.05
 )
 
-exec python -m offline.main "${args[@]}"
+exec python -m offline.main "${args[@]}" "${@}"
 

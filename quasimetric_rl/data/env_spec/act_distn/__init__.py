@@ -11,6 +11,8 @@ import torch.nn.functional as F
 import torch.distributions
 import torch.distributions.constraints
 
+from .... import FLAGS
+
 
 
 #-----------------------------------------------------------------------------#
@@ -66,7 +68,10 @@ class DiscreteOutputOneHot(ActionOutputConverter):
         self.input_size = self.num_actions = int(action_space.n)
 
     def forward(self, feature: torch.Tensor) -> torch.distributions.Distribution:
-        return torch.distributions.Categorical(logits=feature)
+        return torch.distributions.Categorical(
+            logits=feature,
+            validate_args=FLAGS.DEBUG,
+        )
 
 
 class BoxOutputLinearNormalization(ActionOutputConverter):
@@ -94,20 +99,24 @@ class BoxOutputLinearNormalization(ActionOutputConverter):
         distn = torch.distributions.Normal(
             loc=gmean,
             scale=F.softplus(grawstd) + 1e-4,
+            validate_args=FLAGS.DEBUG,
         )
 
         # Acme (CRL) Tanh Normal
         from .utils import AcmeTanhTransformedDistribution, SampleDist
         distn = AcmeTanhTransformedDistribution(
             distn,
+            validate_args=FLAGS.DEBUG,
         )
         distn = torch.distributions.TransformedDistribution(
             distn,
             torch.distributions.AffineTransform(loc=self.mean, scale=self.half_len),
+            validate_args=FLAGS.DEBUG,
         )
         distn = torch.distributions.Independent(
             distn,
             reinterpreted_batch_ndims=1,
+            validate_args=FLAGS.DEBUG,
         )
 
         distn = SampleDist(distn)

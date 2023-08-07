@@ -70,6 +70,8 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 
 **We recommend monitoring experiments with tensorboard.**
 
+**(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training backpropagating through quasimetric critics), add `agent.actor=null`.
+
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.
 

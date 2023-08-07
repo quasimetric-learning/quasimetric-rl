@@ -15,6 +15,21 @@ from tqdm.auto import tqdm
 tqdm = functools.partial(tqdm, dynamic_ncols=True)
 
 
+T = TypeVar('T')
+
+def singleton(cls: Type[T]) -> Type[T]:
+    instance = None
+
+    @functools.wraps(cls)
+    def wrapped():
+        nonlocal instance
+        if instance is None:
+            instance = cls()
+        return instance
+
+    return wrapped
+
+
 def mkdir(path):
     if not os.path.exists(path):
         try:

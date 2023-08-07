@@ -22,12 +22,15 @@ from omegaconf import OmegaConf, SCMode, DictConfig
 
 import numpy as np
 import torch
+import torch.backends.cudnn
 import torch.multiprocessing
 
 from tensorboardX import SummaryWriter
 
 import quasimetric_rl
-from quasimetric_rl import utils
+from quasimetric_rl import utils, pdb_if_DEBUG, FLAGS
+os.environ['HYDRA_FULL_ERROR'] = str(int(FLAGS.DEBUG))
+
 from quasimetric_rl.utils.steps_counter import StepsCounter
 from quasimetric_rl.modules import InfoT
 from .trainer import Trainer, InteractionConf
@@ -43,6 +46,7 @@ class DeviceConfig:
         return torch.device(self.type, self.index)
 
 
+@utils.singleton
 @attrs.define(kw_only=True)
 class Conf:
     # Disable hydra working directory creation
@@ -130,7 +134,7 @@ cs = hydra.core.config_store.ConfigStore.instance()
 cs.store(name='config', node=Conf())
 
 
-
+@pdb_if_DEBUG
 @hydra.main(version_base=None, config_name="config")
 def train(dict_cfg: DictConfig):
     cfg: Conf = OmegaConf.to_container(dict_cfg, structured_config_mode=SCMode.INSTANTIATE)

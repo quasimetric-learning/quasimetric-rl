@@ -7,9 +7,11 @@ import numpy as np
 from ..memory import register_env
 from . import fetch_envs
 
+
 class GoalCondEnvWrapper(gym.ObservationWrapper):
     r"""
-    Convert the concatenated observation space in GCRL into better format with goal in observation_info.
+    Convert the concatenated observation space in GCRL into a better format with
+    dict observations.
     """
 
     episode_length: int

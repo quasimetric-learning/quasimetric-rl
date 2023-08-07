@@ -1,6 +1,7 @@
 torch==1.13.1
 tqdm
 numpy>=1.17.0
+matplotlib
 gym==0.18.0
 tensorboardX>=2.5
 attrs>=21.4.0

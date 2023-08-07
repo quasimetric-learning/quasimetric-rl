@@ -74,4 +74,3 @@ for name, is_image_based, env_ty in name_img_env:
         )(env_ty, is_image_based),  # capture in scope!
         episode_length=50,
     )
-

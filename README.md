@@ -71,11 +71,11 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 **NOTES**:
 1. **We recommend monitoring experiments with tensorboard.**
 
-2. **(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training backpropagating through quasimetric critics), add `agent.actor=null`.
+2. **(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
 
-3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mmortemo`. It is your debugging friend.
+3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
 
-4. **Adding environments** can be done via `quasimetric_rl.data.base.register_(online|offline)_env`. See their docstrings.
+4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings.
 
 
 ## Citation

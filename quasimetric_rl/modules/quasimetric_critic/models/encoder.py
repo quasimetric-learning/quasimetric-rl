@@ -15,7 +15,7 @@ class Encoder(nn.Module):
     r"""
     (*, *input_shape)                      Input
            |
-     [input_encoding]                      e.g., atari torso for image input
+     [input_encoding]                      e.g., AtariTorso network to map image input to a flat vector
            |
         (*, d)                             Encoded 1-D input
            |

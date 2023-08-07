@@ -74,7 +74,7 @@ class MLP(nn.Module):
                  input_size: int,
                  output_size: int,
                  *,
-                 hidden_sizes: List[int],
+                 hidden_sizes: Collection[int],
                  activation_fn: Type[nn.Module] = nn.ReLU,
                  zero_init_last_fc: bool = False):
         super().__init__()

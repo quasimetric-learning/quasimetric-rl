@@ -13,7 +13,7 @@ import gym.spaces
 
 import d4rl.pointmaze
 
-from ..base import register_env
+from ..base import register_offline_env
 from . import load_environment, convert_dict_to_EpisodeData_iter, sequence_dataset
 
 
@@ -96,7 +96,7 @@ def load_episodes_maze2d(name):
 
 
 for name in ['maze2d-umaze-v1', 'maze2d-medium-v1', 'maze2d-large-v1']:
-    register_env(
+    register_offline_env(
         'd4rl', name,
         create_env_fn=functools.partial(load_environment, name),
         load_episodes_fn=functools.partial(load_episodes_maze2d, name),

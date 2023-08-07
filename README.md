@@ -68,9 +68,15 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 ./online/run_gcrl.sh env.name='FetchSlide' seed=44411223
 ```
 
-**We recommend monitoring experiments with tensorboard.**
+**NOTES**:
+1. **We recommend monitoring experiments with tensorboard.**
 
-**(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training backpropagating through quasimetric critics), add `agent.actor=null`.
+2. **(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training backpropagating through quasimetric critics), add `agent.actor=null`.
+
+3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mmortemo`. It is your debugging friend.
+
+4. **Adding environments** can be done via `quasimetric_rl.data.base.register_(online|offline)_env`. See their docstrings.
+
 
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.

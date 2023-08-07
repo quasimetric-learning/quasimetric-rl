@@ -4,7 +4,7 @@ import gym
 import gym.spaces
 import numpy as np
 
-from ..memory import register_env
+from ..memory import register_online_env
 from . import fetch_envs
 
 
@@ -67,7 +67,7 @@ name_img_env = [
 
 
 for name, is_image_based, env_ty in name_img_env:
-    register_env(
+    register_online_env(
         'gcrl', name,
         create_env_fn=(
             lambda env_ty, is_image_based: lambda: GoalCondEnvWrapper(env_ty(), 50, is_image_based)

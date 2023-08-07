@@ -121,23 +121,26 @@ class EpisodeData(MultiEpisodeData):
 #   + kind  # d4rl, gcrl, etc.
 #   + spec  # maze2d-umaze-v1, FetchPushImage, etc.
 
-# Each specific env (e.g., an offline env from d4rl) just needs to register
-#   1. how to load the episodes
-#      (this is optional in online settings. see ReplayBuffer)
-#
-#      load_episodes_fn() -> Iterator[EpisodeData]
-#
-#   2. how to create an env
-#
-#      create_env_fn() -> gym.Env
-
 
 LOAD_EPISODES_REGISTRY: Mapping[Tuple[str, str], Callable[[], Iterator[EpisodeData]]] = {}
 CREATE_ENV_REGISTRY: Mapping[Tuple[str, str], Callable[[], gym.Env]] = {}
 
 
-# See d4rl/maze2d.py for example
-def register_env(kind: str, spec: str, *, load_episodes_fn, create_env_fn):
+def register_offline_env(kind: str, spec: str, *, load_episodes_fn, create_env_fn):
+    r"""
+    Each specific env (e.g., an offline env from d4rl) just needs to register
+
+        1. how to load the episodes
+        (this is optional in online settings. see ReplayBuffer)
+
+        load_episodes_fn() -> Iterator[EpisodeData]
+
+        2. how to create an env
+
+        create_env_fn() -> gym.Env
+
+     See d4rl/maze2d.py for example
+    """
     assert (kind, spec) not in LOAD_EPISODES_REGISTRY
     LOAD_EPISODES_REGISTRY[(kind, spec)] = load_episodes_fn
     CREATE_ENV_REGISTRY[(kind, spec)] = create_env_fn

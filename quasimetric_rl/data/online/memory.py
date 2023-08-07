@@ -15,7 +15,7 @@ from quasimetric_rl.data.env_spec import EnvSpec
 from .. import EnvSpec
 from ..base import (
     EpisodeData, MultiEpisodeData, Dataset, BatchData,
-    register_env as _register_env_for_Dataset,
+    register_offline_env,
 )
 from .utils import get_empty_episode, get_empty_episodes
 
@@ -47,7 +47,7 @@ from .utils import get_empty_episode, get_empty_episodes
 #        ii. be wrapped with `FixedLengthEnvWrapper`.
 #
 #      (i) and (ii) are checked in collecting rollouts and creating `ReplayBuffer`.
-#      (iii) is done by the `register_env` function below.
+#      (iii) is done by the `register_online_env` function below.
 #
 
 
@@ -74,12 +74,19 @@ class FixedLengthEnvWrapper(gym.Wrapper):
 def load_episode_error():
     raise NotImplementedError()
 
-def register_env(kind: str, spec: str, *,
+
+def register_online_env(kind: str, spec: str, *,
                  load_episodes_fn=load_episode_error,
                  create_env_fn, episode_length: int):
-    _register_env_for_Dataset(kind, spec,
-                              load_episodes_fn=load_episodes_fn,
-                              create_env_fn=lambda: FixedLengthEnvWrapper(create_env_fn(), episode_length))
+    r"""
+    Similar to `register_offline_env`, but
+      1. has a default `load_episodes_fn` that errors out.
+      2. requires each episode to have a fixed length specified by `episode_length`.
+    """
+    register_offline_env(
+        kind, spec,
+        load_episodes_fn=load_episodes_fn,
+        create_env_fn=lambda: FixedLengthEnvWrapper(create_env_fn(), episode_length))
 
 
 class ReplayBuffer(Dataset):

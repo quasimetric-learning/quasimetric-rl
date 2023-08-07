@@ -23,6 +23,8 @@ tensorboardX>=2.5
 attrs>=21.4.0
 hydra-core==1.3.2
 omegaconf==2.3.0
+d4rl==1.1
+mujoco==2.3.6
 ```
 
 ## Code structure

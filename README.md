@@ -15,7 +15,7 @@ The code has been tested on
 Software dependencies (also in [requirements.txt](./requirements.txt)):
 
 ```
-torch==1.13.1
+torch>=1.13.1
 tqdm
 numpy>=1.17.0
 gym==0.18.0

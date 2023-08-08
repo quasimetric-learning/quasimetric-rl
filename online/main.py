@@ -1,10 +1,6 @@
 from typing import *
 
 import os
-import sys
-
-if 'MUJOCO_GL' not in os.environ:
-    os.environ['MUJOCO_GL'] = 'egl'
 
 import attrs
 import yaml
@@ -29,7 +25,6 @@ from tensorboardX import SummaryWriter
 
 import quasimetric_rl
 from quasimetric_rl import utils, pdb_if_DEBUG, FLAGS
-os.environ['HYDRA_FULL_ERROR'] = str(int(FLAGS.DEBUG))
 
 from quasimetric_rl.utils.steps_counter import StepsCounter
 from quasimetric_rl.modules import InfoT
@@ -97,7 +92,7 @@ class Conf:
     interaction: InteractionConf = InteractionConf()
 
     batch_size: int = attrs.field(default=256, validator=attrs.validators.gt(0))
-    log_steps: int = attrs.field(default=50, validator=attrs.validators.gt(0))
+    log_steps: int = attrs.field(default=250, validator=attrs.validators.gt(0))
     eval_steps: int = attrs.field(default=2000, validator=attrs.validators.gt(0))
     save_steps: int = attrs.field(default=50000, validator=attrs.validators.gt(0))
 
@@ -315,4 +310,10 @@ def train(dict_cfg: DictConfig):
 
 
 if __name__ == '__main__':
+    if 'MUJOCO_GL' not in os.environ:
+        os.environ['MUJOCO_GL'] = 'egl'
+
+    # set up some hydra flags before parsing
+    os.environ['HYDRA_FULL_ERROR'] = str(int(FLAGS.DEBUG))
+
     train()

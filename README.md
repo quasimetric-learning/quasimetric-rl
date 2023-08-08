@@ -72,15 +72,58 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 ./online/run_gcrl.sh env.name='FetchSlide' seed=44411223 interaction.total_env_steps=10 agent.num_critics=3
 ```
 
+<details>
+<summary><strong>
+Example code for how to load a trained checkpoint (click me)
+</strong></summary>
+    
+```py
+import os
+import torch
+from omegaconf import OmegaConf, SCMode
+import yaml
+
+from quasimetric_rl.data import Dataset
+from quasimetric_rl.modules import QRLAgent, QRLConf
+
+
+expr_checkpoint = '/xxx/xx/xx/xxxx.pth'  # FIXME
+expr_checkpoint = '/data/vision/phillipi/rl_repr/qrl_public/online/results/gcrl_FetchPush/iqe(dim=2048,components=64)_dyn=0.1_actor(goal=Rand+Future,ent)_seed=60912/checkpoint_env01000000_opt00990500_final.pth'
+
+
+expr_dir = os.path.dirname(expr_checkpoint)
+with open(expr_dir + '/config.yaml', 'r') as f:
+    # load saved conf
+    conf = OmegaConf.create(yaml.safe_load(f))
+
+
+# 1. How to create env
+dataset: Dataset = Dataset.Conf(kind=conf.env.kind, name=conf.env.name).make(dummy=True)  # dummy: don't load data
+env = dataset.create_env()  # <-- you can use this now!
+# episodes = list(dataset.load_episodes())  # if you want to load episodes for offline data
+
+
+# 2. How to re-create QRL agent
+agent_conf: QRLConf = OmegaConf.to_container(
+  OmegaConf.merge(OmegaConf.structured(QRLConf()), conf.agent),  # overwrite with loaded conf
+  structured_config_mode=SCMode.INSTANTIATE,  # create the object
+)
+agent: QRLAgent = agent_conf.make(env_spec=dataset.env_spec, total_optim_steps=1)[0]  # you can move to your fav device
+
+
+# 3. Load checkpoint
+agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
+```
+</details>
+
 **NOTES**:
 1. **We recommend monitoring experiments with tensorboard.**
 
-2. **(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
+2. **[Offline Only] if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
 
 3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
 
 4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
-
 
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.

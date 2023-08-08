@@ -86,7 +86,7 @@ def preprocess_maze2d_fix(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, n
 
 def load_episodes_maze2d(name):
     env = load_environment(name)
-    yield from convert_d4rl_dict_to_EpisodeData_iter(
+    yield from convert_dict_to_EpisodeData_iter(
         sequence_dataset(
             env,
             preprocess_maze2d_fix(

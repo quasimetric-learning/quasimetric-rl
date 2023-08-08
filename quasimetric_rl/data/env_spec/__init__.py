@@ -17,14 +17,23 @@ from . import act_distn
 
 @attrs.define(kw_only=True)
 class EnvSpec:
-    observation_space: gym.Space
+    observation_space: gym.Space  # always the observation of a single tensor, even if the env gives a dict
+    observation_space_is_dict: bool  # whether a dict with key {'observation', 'achieved_goal', 'desired_goal'}
     action_space: gym.Space
 
     @classmethod
     def from_env(self, env: gym.Env) -> 'EnvSpec':
+        ospace = env.observation_space
+        observation_space_is_dict = False
+        if isinstance(ospace, gym.spaces.Dict):
+            # support the goal-cond gym format
+            assert set(ospace.spaces.keys()) == {'observation', 'achieved_goal', 'desired_goal'}
+            ospace = ospace['observation']
+            observation_space_is_dict = True
         return EnvSpec(
-            observation_space=env.observation_space,
+            observation_space=ospace,
             action_space=env.action_space,
+            observation_space_is_dict=observation_space_is_dict,
         )
 
     @property

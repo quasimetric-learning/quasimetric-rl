@@ -215,7 +215,10 @@ class Dataset:
     def load_episodes(self) -> Iterator[EpisodeData]:
         return LOAD_EPISODES_REGISTRY[self.kind, self.name]()
 
-    def __init__(self, kind: str, name: str, *, future_observation_discount: float) -> None:
+    def __init__(self, kind: str, name: str, *,
+                 future_observation_discount: float,
+                 dummy: bool = False,  # when you don't want to load data, e.g., in analysis
+                 ) -> None:
         self.kind = kind
         self.name = name
         self.future_observation_discount = future_observation_discount
@@ -225,7 +228,12 @@ class Dataset:
         assert 0 <= future_observation_discount
         self.future_observation_discount = future_observation_discount
 
-        episodes = tuple(self.load_episodes())
+        if not dummy:
+            episodes = tuple(self.load_episodes())
+        else:
+            from .online.utils import get_empty_episode
+            episodes = (get_empty_episode(self.env_spec, episode_length=1),)
+
         obs_indices_to_obs_index_in_episode = []
         indices_to_episode_indices = []
         indices_to_episode_timesteps = []
@@ -234,6 +242,7 @@ class Dataset:
             obs_indices_to_obs_index_in_episode.append(torch.arange(l + 1, dtype=torch.int64))
             indices_to_episode_indices.append(torch.full([l], eidx, dtype=torch.int64))
             indices_to_episode_timesteps.append(torch.arange(l, dtype=torch.int64))
+
         assert len(episodes) > 0, "must have at least one episode"
         self.raw_data = MultiEpisodeData.cat(episodes)
 

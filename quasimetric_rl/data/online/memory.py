@@ -162,16 +162,20 @@ class ReplayBuffer(Dataset):
             yield get_empty_episode(self.env_spec, self.episode_length)
 
     def __init__(self, kind: str, name: str, *, future_observation_discount: float,
-                 load_offline_data: bool, init_num_transitions: int, increment_num_transitions: int):
+                 load_offline_data: bool, init_num_transitions: int, increment_num_transitions: int,
+                 dummy: bool = False,  # when you don't want to load data, e.g., in analysis
+                 ):
         self.kind = kind
         self.name = name
         self.load_offline_data = load_offline_data
         self.init_num_transitions = init_num_transitions
         self.increment_num_transitions = increment_num_transitions
         self.env = self.create_env()
-        super().__init__(kind, name, future_observation_discount=future_observation_discount)
+        super().__init__(
+            kind, name, future_observation_discount=future_observation_discount,
+            dummy=dummy)
         self.num_episodes_realized = 0
-        if load_offline_data:  # load data if required.
+        if load_offline_data and not dummy:  # load data if required.
             for episode in super().load_episodes():
                 self.add_rollout(episode)
                 self.num_episodes_realized += 1

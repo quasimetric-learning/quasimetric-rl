@@ -81,6 +81,52 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 
 4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
 
+<detail>
+<summary>
+Example code for how to load a trained checkpoint
+<summary>
+```py
+import os
+import torch
+import quasimetric_rl
+from omegaconf import OmegaConf, SCMode
+import yaml
+
+is_offline: bool = True  # change to False if loading online agents
+
+if is_offline:
+    from offline.main import Conf
+else:
+    from offline.main import Conf
+
+
+expr_checkpoint = '/xxx/xx/xx/xxxx_final.pth'  # FIXME
+
+
+expr_dir = os.path.dirname(expr_checkpoint)
+with open(expr_dir + '/config.yaml', 'r') as f:
+    # load saved conf
+    dict_conf = OmegaConf.merge(OmegaConf.structured(Conf()), yaml.safe_load(f))
+    # convert to object format
+    conf: Conf = OmegaConf.to_container(dict_conf, structured_config_mode=SCMode.INSTANTIATE)
+
+
+# 1. How to create env
+if not is_offline:
+    # we are not training... skip the long initialization of replay buffer
+    conf.env.init_num_transitions = 1
+
+dataset = conf.env.make()
+env = dataset.create_env()  # <-- you can use this now!
+# episodes = list(dataset.load_episodes())  # if you want to load episodes for offline data
+
+
+# 2. How to re-create QRL agent
+agent: quasimetric_rl.modules.QRLAgent = conf.agent.make(
+  env_spec=rb.env_spec, total_optim_steps=1)[0]
+
+```
+</detail>
 
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.

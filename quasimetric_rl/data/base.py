@@ -179,9 +179,10 @@ class Dataset:
             attrs.validators.le(1.0),
         ))
 
-        def make(self) -> 'Dataset':
+        def make(self, *, dummy: bool = False) -> 'Dataset':
             return Dataset(self.kind, self.name,
-                           future_observation_discount=self.future_observation_discount)
+                           future_observation_discount=self.future_observation_discount,
+                           dummy=dummy)
 
     kind: str
     name: str

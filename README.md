@@ -72,19 +72,11 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 ./online/run_gcrl.sh env.name='FetchSlide' seed=44411223 interaction.total_env_steps=10 agent.num_critics=3
 ```
 
-**NOTES**:
-1. **We recommend monitoring experiments with tensorboard.**
-
-2. **(Offline Only) if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
-
-3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
-
-4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
-
-<detail>
-<summary>
-Example code for how to load a trained checkpoint
-<summary>
+<details>
+<summary><strong>
+Example code for how to load a trained checkpoint (click me)
+</strong></summary>
+    
 ```py
 import os
 import torch
@@ -122,7 +114,16 @@ agent: QRLAgent = agent_conf.make(env_spec=dataset.env_spec, total_optim_steps=1
 # 3. Load checkpoint
 agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
 ```
-</detail>
+</details>
+
+**NOTES**:
+1. **We recommend monitoring experiments with tensorboard.**
+
+2. **[Offline Only] if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
+
+3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
+
+4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
 
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.

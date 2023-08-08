@@ -207,9 +207,6 @@ class Dataset:
     max_episode_length: int
     # -----
 
-    def _get_env_spec(self) -> EnvSpec:
-        return EnvSpec.from_env(self.create_env())
-
     def create_env(self) -> gym.Env:
         return CREATE_ENV_REGISTRY[self.kind, self.name]()
 
@@ -224,7 +221,7 @@ class Dataset:
         self.name = name
         self.future_observation_discount = future_observation_discount
 
-        self.env_spec = self._get_env_spec()
+        self.env_spec = EnvSpec.from_env(self.create_env())
 
         assert 0 <= future_observation_discount
         self.future_observation_discount = future_observation_discount

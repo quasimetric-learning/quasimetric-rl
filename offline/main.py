@@ -104,6 +104,8 @@ class Conf:
                 self.agent.quasimetric_critic.model.quasimetric_model.quasimetric_head_spec,
                 f'dyn={self.agent.quasimetric_critic.losses.latent_dynamics.weight:g}',
             ]
+            if self.agent.num_critics > 1:
+                specs.append(f'{self.agent.num_critics}critic')
             if self.agent.actor is not None:
                 aspecs = []
                 if self.agent.actor.losses.min_dist.add_goal_as_future_state:

@@ -139,15 +139,6 @@ class ReplayBuffer(Dataset):
     def episodes_capacity(self) -> int:
         return self.raw_data.num_episodes
 
-    def _get_env_spec(self) -> EnvSpec:
-        ospace = self.env.observation_space
-        assert isinstance(ospace, gym.spaces.Dict)
-        assert set(ospace.spaces.keys()) == {'observation', 'achieved_goal', 'desired_goal'}
-        return EnvSpec(
-            observation_space=ospace['observation'],
-            action_space=self.env.action_space,
-        )
-
     def create_env(self) -> FixedLengthEnvWrapper:  # type hint
         env = super().create_env()
         assert isinstance(env, FixedLengthEnvWrapper), "not online env"
@@ -219,8 +210,17 @@ class ReplayBuffer(Dataset):
             env = self.env
 
         epi = get_empty_episode(self.env_spec, self.episode_length)
-        observation_dict = env.reset()
 
+        # check observation space
+        obs_dict_keys = {'observation', 'achieved_goal', 'desired_goal'}
+        WRONG_OBS_ERR_MESSAGE = (
+            f"{self.__class__.__name__} collect_rollout only supports Dict "
+            f"observation space with keys {obs_dict_keys}, but got {env.observation_space}"
+        )
+        assert isinstance(env.observation_space, gym.spaces.Dict), WRONG_OBS_ERR_MESSAGE
+        assert set(env.observation_space.spaces.keys()) == {'observation', 'achieved_goal', 'desired_goal'}, WRONG_OBS_ERR_MESSAGE
+
+        observation_dict = env.reset()
         observation: torch.Tensor = torch.as_tensor(observation_dict['observation'])
 
         goal: torch.Tensor = torch.as_tensor(observation_dict['desired_goal'])

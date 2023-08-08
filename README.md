@@ -88,35 +88,28 @@ Example code for how to load a trained checkpoint
 ```py
 import os
 import torch
-import quasimetric_rl
 from omegaconf import OmegaConf, SCMode
 import yaml
 
-is_offline: bool = True  # change to False if loading online agents
-
-if is_offline:
-    from offline.main import Conf
-else:
-    from offline.main import Conf
+from quasimetric_rl.data import Dataset
+from quasimetric_rl.module import QRLAgent, QRLConf
 
 
-expr_checkpoint = '/xxx/xx/xx/xxxx_final.pth'  # FIXME
+expr_checkpoint = '/xxx/xx/xx/xxxx.pth'  # FIXME
+expr_checkpoint = '/data/vision/phillipi/rl_repr/qrl_public/online/results/gcrl_FetchPush/iqe(dim=2048,components=64)_dyn=0.1_actor(goal=Rand+Future,ent)_seed=60912/checkpoint_env01000000_opt00990500_final.pth'
 
 
 expr_dir = os.path.dirname(expr_checkpoint)
 with open(expr_dir + '/config.yaml', 'r') as f:
     # load saved conf
     dict_conf = OmegaConf.merge(OmegaConf.structured(Conf()), yaml.safe_load(f))
+
     # convert to object format
     conf: Conf = OmegaConf.to_container(dict_conf, structured_config_mode=SCMode.INSTANTIATE)
 
 
 # 1. How to create env
-if not is_offline:
-    # we are not training... skip the long initialization of replay buffer
-    conf.env.init_num_transitions = 1
-
-dataset = conf.env.make()
+dataset: Dataset = Dataset.Conf(kind=conf.env.kind, name=conf.env.name).make(dummy=True)  # dummy: don't load data
 env = dataset.create_env()  # <-- you can use this now!
 # episodes = list(dataset.load_episodes())  # if you want to load episodes for offline data
 
@@ -125,6 +118,9 @@ env = dataset.create_env()  # <-- you can use this now!
 agent: quasimetric_rl.modules.QRLAgent = conf.agent.make(
   env_spec=rb.env_spec, total_optim_steps=1)[0]
 
+
+# 3. Load checkpoint
+agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu'))
 ```
 </detail>
 

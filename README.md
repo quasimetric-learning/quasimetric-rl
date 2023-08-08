@@ -92,7 +92,7 @@ from omegaconf import OmegaConf, SCMode
 import yaml
 
 from quasimetric_rl.data import Dataset
-from quasimetric_rl.module import QRLAgent, QRLConf
+from quasimetric_rl.modules import QRLAgent, QRLConf
 
 
 expr_checkpoint = '/xxx/xx/xx/xxxx.pth'  # FIXME
@@ -102,10 +102,7 @@ expr_checkpoint = '/data/vision/phillipi/rl_repr/qrl_public/online/results/gcrl_
 expr_dir = os.path.dirname(expr_checkpoint)
 with open(expr_dir + '/config.yaml', 'r') as f:
     # load saved conf
-    dict_conf = OmegaConf.merge(OmegaConf.structured(Conf()), yaml.safe_load(f))
-
-    # convert to object format
-    conf: Conf = OmegaConf.to_container(dict_conf, structured_config_mode=SCMode.INSTANTIATE)
+    conf = OmegaConf.create(yaml.safe_load(f))
 
 
 # 1. How to create env
@@ -115,12 +112,15 @@ env = dataset.create_env()  # <-- you can use this now!
 
 
 # 2. How to re-create QRL agent
-agent: quasimetric_rl.modules.QRLAgent = conf.agent.make(
-  env_spec=rb.env_spec, total_optim_steps=1)[0]
+agent_conf: QRLConf = OmegaConf.to_container(
+  OmegaConf.merge(OmegaConf.structured(QRLConf()), conf.agent),  # overwrite with loaded conf
+  structured_config_mode=SCMode.INSTANTIATE,  # create the object
+)
+agent: QRLAgent = agent_conf.make(env_spec=dataset.env_spec, total_optim_steps=1)[0]  # you can move to your fav device
 
 
 # 3. Load checkpoint
-agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu'))
+agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
 ```
 </detail>
 

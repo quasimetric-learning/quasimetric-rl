@@ -32,31 +32,45 @@ def suppress_output():
         with redirect_stderr(fnull) as err, redirect_stdout(fnull) as out:
             yield (err, out)
 
-with suppress_output():
-    ## d4rl prints out a variety of warnings
+
+d4rl = None
+OfflineEnv = None
+
+def lazy_init_d4rl():
+    # d4rl requires mujoco_py, which has a range of installation issues.
+    # do not load until needed.
+
+    global d4rl, OfflineEnv
+
+    if d4rl is None:
+        import importlib
+        with suppress_output():
+            ## d4rl prints out a variety of warnings
+            d4rl = __import__('d4rl')
+        OfflineEnv = d4rl.offline_env.OfflineEnv
+
+
+if TYPE_CHECKING:
     import d4rl
     import d4rl.offline_env
     import d4rl.pointmaze
 
-
-if TYPE_CHECKING:
-    class OfflineEnv(d4rl.offline_env.OfflineEnv):
+    class OfflineEnv(d4rl.offline_env.OfflineEnv):  # give it better type annotation
         name: str
         max_episode_steps: int
-else:
-    OfflineEnv = d4rl.offline_env.OfflineEnv
+
 
 #-----------------------------------------------------------------------------#
 #-------------------------------- general api --------------------------------#
 #-----------------------------------------------------------------------------#
 
-def load_environment(name: Union[str, gym.Env]) -> OfflineEnv:
+def load_environment(name: Union[str, gym.Env]) -> 'OfflineEnv':
     if type(name) != str:
         ## name is already an environment
         return name
     with suppress_output():
         wrapped_env: gym.Wrapper = gym.make(name)
-    env = cast(OfflineEnv, wrapped_env.unwrapped)
+    env: 'OfflineEnv' = wrapped_env.unwrapped
     env.max_episode_steps = wrapped_env._max_episode_steps
     env.name = name
     env.reset()
@@ -65,7 +79,7 @@ def load_environment(name: Union[str, gym.Env]) -> OfflineEnv:
     return env
 
 
-def sequence_dataset(env: OfflineEnv, dataset: Mapping[str, np.ndarray]) -> Generator[Mapping[str, np.ndarray], None, None]:
+def sequence_dataset(env: 'OfflineEnv', dataset: Mapping[str, np.ndarray]) -> Generator[Mapping[str, np.ndarray], None, None]:
     """
     Returns an *ordered* iterator through trajectories.
     Args:
@@ -92,7 +106,7 @@ def sequence_dataset(env: OfflineEnv, dataset: Mapping[str, np.ndarray]) -> Gene
     data_ = collections.defaultdict(list)
 
     # The newer version of the dataset adds an explicit
-    # timeouts field. Keep old method for backwards compatability.
+    # timeouts field. Keep old method for backwards compatibility.
     use_timeouts = 'timeouts' in dataset
 
     episode_step = 0

@@ -41,7 +41,7 @@ class Identity(InputEncoding):
 
 class OneHot(InputEncoding):
     def __init__(self, input_shape: torch.Size, num_classes: int) -> None:
-        assert len(input_shape) == 1
+        assert len(input_shape) == 0, 'we only support single scalar discrete action'
         super().__init__(input_shape, num_classes)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:

@@ -54,6 +54,12 @@ class MinDistLoss(ActorLossBase):
                  adaptive_entropy_regularizer: bool,
                  add_goal_as_future_state: bool):
         super().__init__()
+        if not env_spec.action_dtype.is_floating_point:
+            raise RuntimeError(
+                'Discrete action spaces do not support optimizing actor by backpropagation through the critic. '
+                'Set agent.actor=null to turn of actor optimization.'
+            )
+
         self.add_goal_as_future_state = add_goal_as_future_state
         if adaptive_entropy_regularizer:
             self.raw_entropy_weight = nn.Parameter(torch.tensor(0.0, dtype=torch.float32))

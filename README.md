@@ -18,6 +18,8 @@ Software dependencies (also in [requirements.txt](./requirements.txt)):
 torch>=1.13.1
 tqdm
 numpy>=1.17.0
+imageio==2.6.1
+matplotlib
 gym==0.18.0
 tensorboardX>=2.5
 attrs>=21.4.0
@@ -26,6 +28,8 @@ omegaconf==2.3.0
 d4rl==1.1
 mujoco==2.3.6
 ```
+
+**NOTE:** Both `d4rl` depends on `mujoco_py` which can be difficult to install. The code lazily imports `mujoco_py` and  `d4rl` if the user requests such environments. Therefore, their installation is not necessary to run the QRL algorithm, e.g., on a custom environment. However, running QRL on the provided environments (`d4rl.maze2d` and `GCRL`) requires them.
 
 ## Code structure
 
@@ -48,11 +52,11 @@ To reproduce the offline `d4rl`  experiments in paper, you can use commands simi
 # run umaze seed=12131415 device.index=2
 ./offline/run_maze2d.sh env.name='maze2d-umaze-v1'
 
-# run medium maze with custom seed and the GPU at index 2
-./offline/run_maze2d.sh env.name='maze2d-medium-v1' seed=12131415 device.index=2
+# run medium maze with custom seed, the GPU at index 2, and not training an actor
+./offline/run_maze2d.sh env.name='maze2d-medium-v1' seed=12131415 device.index=2 agent.actor=null
 
-# run large maze with custom seed and the GPU at index 3
-./offline/run_maze2d.sh env.name='maze2d-large-v1' seed=44411223 device.index=3
+# run large maze with custom seed, the GPU at index 3, and 100 gradient steps
+./offline/run_maze2d.sh env.name='maze2d-large-v1' seed=44411223 device.index=3 total_optim_steps=100
 ```
 
 To reproduce the online `gcrl`  experiments in paper, you can use commands similar to these:
@@ -64,8 +68,8 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 # run image-input FetchPush with custom seed and the GPU at index 2
 ./online/run_gcrl.sh env.name='FetchPushImage' seed=12131415 device.index=2
 
-# run state-input FetchSlide with custom seed
-./online/run_gcrl.sh env.name='FetchSlide' seed=44411223
+# run state-input FetchSlide with custom seed, 10 environment steps, and 3 critics
+./online/run_gcrl.sh env.name='FetchSlide' seed=44411223 interaction.total_env_steps=10 agent.num_critics=3
 ```
 
 **NOTES**:
@@ -75,7 +79,7 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 
 3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
 
-4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings.
+4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
 
 
 ## Citation

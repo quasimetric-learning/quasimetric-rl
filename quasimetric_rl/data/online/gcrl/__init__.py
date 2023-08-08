@@ -1,11 +1,12 @@
 from typing import *
 
+import functools
+
 import gym
 import gym.spaces
 import numpy as np
 
 from ..memory import register_online_env
-from . import fetch_envs
 
 
 class GoalCondEnvWrapper(gym.ObservationWrapper):
@@ -57,20 +58,26 @@ class GoalCondEnvWrapper(gym.ObservationWrapper):
 
 
 
-name_img_env = [
-    ('FetchReach', False, fetch_envs.FetchReachEnv),
-    ('FetchReachImage', True, fetch_envs.FetchReachImage),
-    ('FetchPush', False, fetch_envs.FetchPushEnv),
-    ('FetchPushImage', True, fetch_envs.FetchPushImage),
-    ('FetchSlide', False, fetch_envs.FetchSlideEnv),
-]
+def create_env_from_spec(name: str):
+    from . import fetch_envs  # lazy init mujoco/mujoco_py, which has a range of installation issues
+
+    env: gym.Env = getattr(fetch_envs, name + 'Env')()
+    is_image_based = name.endswith('Image')
+    return GoalCondEnvWrapper(env, episode_length=50, is_image_based=is_image_based)
 
 
-for name, is_image_based, env_ty in name_img_env:
+valid_names = (
+    'FetchReach',
+    'FetchReachImage',
+    'FetchPush',
+    'FetchPushImage',
+    'FetchSlide',
+)
+
+
+for name in valid_names:
     register_online_env(
         'gcrl', name,
-        create_env_fn=(
-            lambda env_ty, is_image_based: lambda: GoalCondEnvWrapper(env_ty(), 50, is_image_based)
-        )(env_ty, is_image_based),  # capture in scope!
+        create_env_fn=functools.partial(create_env_from_spec, name),
         episode_length=50,
     )

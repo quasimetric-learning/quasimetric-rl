@@ -110,6 +110,25 @@ class EpisodeData(MultiEpisodeData):
         super().__attrs_post_init__()
         assert self.num_episodes == 1
 
+    @classmethod
+    def from_simple_trajectory(cls,
+                               observations: Union[np.ndarray, torch.Tensor],
+                               actions: Union[np.ndarray, torch.Tensor],
+                               next_observations: Union[np.ndarray, torch.Tensor],
+                               rewards: Union[np.ndarray, torch.Tensor],
+                               terminals: Union[np.ndarray, torch.Tensor],
+                               timeouts: Union[np.ndarray, torch.Tensor]):
+        observations = torch.tensor(observations)
+        next_observations=torch.tensor(next_observations)
+        all_observations = torch.cat([observations, next_observations[-1:]], dim=0)
+        return cls(
+            episode_length=torch.tensor([observations.shape[0]]),
+            all_observations=all_observations,
+            actions=torch.tensor(actions),
+            rewards=torch.tensor(rewards),
+            terminals=torch.tensor(terminals),
+            timeouts=torch.tensor(timeouts),
+        )
 
 
 #-----------------------------------------------------------------------------#

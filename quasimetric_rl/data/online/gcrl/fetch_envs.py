@@ -185,7 +185,7 @@ class FetchSlideEnv(slide.FetchSlideEnv):
         return np.concatenate([s, g]).astype(np.float32)
 
 
-class FetchReachImage(reach.FetchReachEnv):
+class FetchReachImageEnv(reach.FetchReachEnv):
     """Wrapper for the FetchReach environment with image observations."""
 
     def __init__(self,
@@ -194,7 +194,7 @@ class FetchReachImage(reach.FetchReachEnv):
         self.reward_mode = reward_mode
         self._dist = []
         self._dist_vec = []
-        super(FetchReachImage, self).__init__()
+        super(FetchReachImageEnv, self).__init__()
         self._old_observation_space = self.observation_space
         self._new_observation_space = gym.spaces.Box(
                 low=np.full((64*64*6), 0),
@@ -214,7 +214,7 @@ class FetchReachImage(reach.FetchReachEnv):
 
         # generate the new goal image
         self.observation_space = self._old_observation_space
-        s = super(FetchReachImage, self).reset()
+        s = super(FetchReachImageEnv, self).reset()
         self.observation_space = self._new_observation_space
         self._goal = s['desired_goal'].copy()
 
@@ -223,12 +223,12 @@ class FetchReachImage(reach.FetchReachEnv):
             obj = s['desired_goal']
             delta = obj - hand
             a = np.concatenate([np.clip(10 * delta, -1, 1), [0.0]])
-            s = super(FetchReachImage, self).step(a)[0]
+            s = super(FetchReachImageEnv, self).step(a)[0]
 
         self._goal_img = self.observation(s)
 
         self.observation_space = self._old_observation_space
-        s = super(FetchReachImage, self).reset()
+        s = super(FetchReachImageEnv, self).reset()
         self.observation_space = self._new_observation_space
         img = self.observation(s)
         dist = np.linalg.norm(s['achieved_goal'] - self._goal)
@@ -236,7 +236,7 @@ class FetchReachImage(reach.FetchReachEnv):
         return np.concatenate([img, self._goal_img])
 
     def step(self, action):
-        s = super(FetchReachImage, self).step(action)[0]
+        s = super(FetchReachImageEnv, self).step(action)[0]
         dist = np.linalg.norm(s['achieved_goal'] - self._goal)
         self._dist.append(dist)
         done = False
@@ -254,7 +254,7 @@ class FetchReachImage(reach.FetchReachEnv):
         return img.flatten()
 
     def _viewer_setup(self):
-        super(FetchReachImage, self)._viewer_setup()
+        super(FetchReachImageEnv, self)._viewer_setup()
         self.viewer.cam.lookat[Ellipsis] = np.array([1.2, 0.8, 0.5])
         self.viewer.cam.distance = 0.8
         self.viewer.cam.azimuth = 180
@@ -272,7 +272,7 @@ class FetchReachImage(reach.FetchReachEnv):
         return r
 
 
-class FetchPushImage(push.FetchPushEnv):
+class FetchPushImageEnv(push.FetchPushEnv):
     """Wrapper for the FetchPush environment with image observations."""
 
     def __init__(self, camera='camera2', start_at_obj=True, rand_y=False,
@@ -284,7 +284,7 @@ class FetchPushImage(push.FetchPushEnv):
         self._camera_name = camera
         self._dist = []
         self._dist_vec = []
-        super(FetchPushImage, self).__init__()
+        super(FetchPushImageEnv, self).__init__()
         self._old_observation_space = self.observation_space
         self._new_observation_space = gym.spaces.Box(
                 low=np.full((64*64*6), 0),
@@ -298,7 +298,7 @@ class FetchPushImage(push.FetchPushEnv):
         self._dist = []
 
     def _move_hand_to_obj(self):
-        s = super(FetchPushImage, self)._get_obs()
+        s = super(FetchPushImageEnv, self)._get_obs()
         for _ in range(100):
             hand = s['observation'][:3]
             obj = s['achieved_goal'] + np.array([-0.02, 0.0, 0.0])
@@ -306,7 +306,7 @@ class FetchPushImage(push.FetchPushEnv):
             if np.linalg.norm(delta) < 0.06:
                 break
             a = np.concatenate([np.clip(delta, -1, 1), [0.0]])
-            s = super(FetchPushImage, self).step(a)[0]
+            s = super(FetchPushImageEnv, self).step(a)[0]
 
     def reset(self):
         if self._dist:  # if len(self._dist) > 0 ...
@@ -315,11 +315,11 @@ class FetchPushImage(push.FetchPushEnv):
 
         # generate the new goal image
         self.observation_space = self._old_observation_space
-        s = super(FetchPushImage, self).reset()
+        s = super(FetchPushImageEnv, self).reset()
         self.observation_space = self._new_observation_space
         # Randomize object position
         for _ in range(8):
-            super(FetchPushImage, self).step(np.array([-1.0, 0.0, 0.0, 0.0]))
+            super(FetchPushImageEnv, self).step(np.array([-1.0, 0.0, 0.0, 0.0]))
         object_qpos = self.sim.data.get_joint_qpos('object0:joint')
         if not self._rand_y:
             object_qpos[1] = 0.75
@@ -333,10 +333,10 @@ class FetchPushImage(push.FetchPushEnv):
         self._goal = block_xyz[:2].copy()
 
         self.observation_space = self._old_observation_space
-        s = super(FetchPushImage, self).reset()
+        s = super(FetchPushImageEnv, self).reset()
         self.observation_space = self._new_observation_space
         for _ in range(8):
-            super(FetchPushImage, self).step(np.array([-1.0, 0.0, 0.0, 0.0]))
+            super(FetchPushImageEnv, self).step(np.array([-1.0, 0.0, 0.0, 0.0]))
         object_qpos = self.sim.data.get_joint_qpos('object0:joint')
         object_qpos[:2] = np.array([1.15, 0.75])
         self.sim.data.set_joint_qpos('object0:joint', object_qpos)
@@ -344,7 +344,7 @@ class FetchPushImage(push.FetchPushEnv):
             self._move_hand_to_obj()
         else:
             for _ in range(5):
-                super(FetchPushImage, self).step(self.action_space.sample())
+                super(FetchPushImageEnv, self).step(self.action_space.sample())
 
         block_xyz = self.sim.data.get_joint_qpos('object0:joint')[:3].copy()
         img = self.observation(s)
@@ -356,7 +356,7 @@ class FetchPushImage(push.FetchPushEnv):
         return np.concatenate([img, self._goal_img])
 
     def step(self, action):
-        s = super(FetchPushImage, self).step(action)[0]
+        s = super(FetchPushImageEnv, self).step(action)[0]
         block_xy = self.sim.data.get_joint_qpos('object0:joint')[:2]
         dist = np.linalg.norm(block_xy - self._goal)
         self._dist.append(dist)
@@ -375,7 +375,7 @@ class FetchPushImage(push.FetchPushEnv):
         return img.flatten()
 
     def _viewer_setup(self):
-        super(FetchPushImage, self)._viewer_setup()
+        super(FetchPushImageEnv, self)._viewer_setup()
         if self._camera_name == 'camera1':
             self.viewer.cam.lookat[Ellipsis] = np.array([1.2, 0.8, 0.4])
             self.viewer.cam.distance = 0.9

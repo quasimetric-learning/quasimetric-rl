@@ -1,6 +1,7 @@
 torch>=1.13.1
 tqdm
 numpy>=1.17.0
+imageio==2.6.1
 matplotlib
 gym==0.18.0
 tensorboardX>=2.5

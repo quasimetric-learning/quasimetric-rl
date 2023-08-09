@@ -10,10 +10,10 @@ This repository is the official code release for paper [Optimal Goal-Reaching Re
 
 ## Quasimetric RL (QRL) Objective
 
-Learning the $\color[RGB]{230,97,0}\textsf{quasimetric geometry}$: local costs $\rightarrow$ global optimal paths
+$\textsf{Learning the {\color[RGB]{230,97,0}quasimetric geometry}: {\color[RGB]{199,61,160}local} costs} \rightarrow \textsf{{\color{teal}global} optimal paths}$
 ```math
 \underbrace{\max_{\theta}~\mathbb{E}_{\substack{s\sim p_\mathsf{state}\\g \sim p_\mathsf{goal}}}[{
-\overbrace{d_\theta}^{\color[RGB]{230,97,0}\llap{\textsf{quasimetr}}\rlap{\textsf{ic model}}}}(s, g)]}_{\textsf{push apart all state-goal pairs}}
+\overbrace{d_\theta}^{\color[RGB]{230,97,0}\llap{\textsf{quasimetr}}\rlap{\textsf{ic model}}}}(s, g)]}_{\textsf{push apart {\color{teal}all state-goal pairs}}}
 \quad\quad \text{subject to}\qquad
 \underbrace{\mathbb{E}_{\substack{(s, a, s', \mathsf{cost}) \sim p_\mathsf{transition}}}[ \mathtt{relu}(
 d_\theta(s, s') - \mathsf{cost}
@@ -22,7 +22,7 @@ d_\theta(s, s') - \mathsf{cost}
 \overbrace{
 \epsilon^2
 }^{\color{gray}\llap{\epsilon\textsf{ is a }}\rlap{\textsf{small positive constant}}}
-}}_{\textsf{not overestimate observed local distances/costs}}\tag{QRL}
+}}_{\textsf{not overestimate observed {\color[RGB]{199,61,160}local} distances/costs}}\tag{QRL}
 ```
 
 See [webpage](https://www.tongzhouwang.info/quasimetric_rl/) for explanation.

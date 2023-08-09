@@ -7,6 +7,28 @@ This repository is the official code release for paper [Optimal Goal-Reaching Re
 + [arXiv](https://arxiv.org/abs/2304.01203)
 + [Project Page](https://www.tongzhouwang.info/quasimetric_rl/)
 
+
+## Quasimetric RL (QRL) Objective
+
+Learning the $\color[RGB]{230,97,0}\textsf{quasimetric geometry}$: local costs $\rightarrow$ global optimal paths
+```math
+\underbrace{\max_{\theta}~\mathbb{E}_{\substack{s\sim p_\mathsf{state}\\g \sim p_\mathsf{goal}}}[{
+\overbrace{d_\theta}^{\color[RGB]{230,97,0}\llap{\textsf{quasimetr}}\rlap{\textsf{ic model}}}}(s, g)]}_{\textsf{push apart all state-goal pairs}}
+\quad\quad \text{subject to}\qquad
+\underbrace{\mathbb{E}_{\substack{(s, a, s', \mathsf{cost}) \sim p_\mathsf{transition}}}[ \mathtt{relu}(
+d_\theta(s, s') - \mathsf{cost}
+)^2] \leq
+{
+\overbrace{
+\epsilon^2
+}^{\color{gray}\llap{\epsilon\textsf{ is a }}\rlap{\textsf{small positive constant}}}
+}}_{\textsf{not overestimate observed local distances/costs}}\tag{QRL}
+```
+
+See [webpage](https://www.tongzhouwang.info/quasimetric_rl/) for explanation.
+
+
+
 ## Requirements
 The code has been tested on
 
@@ -29,7 +51,8 @@ d4rl==1.1
 mujoco==2.3.6
 ```
 
-**NOTE:** Both `d4rl` depends on `mujoco_py` which can be difficult to install. The code lazily imports `mujoco_py` and  `d4rl` if the user requests such environments. Therefore, their installation is not necessary to run the QRL algorithm, e.g., on a custom environment. However, running QRL on the provided environments (`d4rl.maze2d` and `GCRL`) requires them.
+> [!NOTE]
+> Both `d4rl` depends on `mujoco_py` which can be difficult to install. The code lazily imports `mujoco_py` and  `d4rl` if the user requests such environments. Therefore, their installation is not necessary to run the QRL algorithm, e.g., on a custom environment. However, running QRL on the provided environments (`d4rl.maze2d` and `GCRL`) requires them.
 
 ## Code structure
 
@@ -116,14 +139,11 @@ agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
 ```
 </details>
 
-**NOTES**:
-1. **We recommend monitoring experiments with tensorboard.**
-
-2. **[Offline Only] if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
-
-3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
-
-4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
+> [!NOTE]
+> 1. **We recommend monitoring experiments with tensorboard.**
+> 2. **[Offline Only] if you do not want to train an actor** (e.g., because the action space is discrete and the code only implements policy training via backpropagating through quasimetric critics), add `agent.actor=null`.
+> 3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
+> 4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
 
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.

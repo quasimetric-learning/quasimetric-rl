@@ -10,8 +10,13 @@ This repository is the official code release for paper [Optimal Goal-Reaching Re
 
 ## Quasimetric RL (QRL) Objective
 
-$\textsf{Learning the {\color[RGB]{230,97,0}quasimetric geometry}: {\color[RGB]{199,61,160}local} costs} \rightarrow \textsf{{\color{teal}global} optimal paths}$
+$%Please view this section in browser
+%
+\textsf{Learning the {\color[RGB]{230,97,0}quasimetric geometry}: {\color[RGB]{199,61,160}local} costs} \rightarrow \textsf{{\color{teal}global} optimal paths}
+$
 ```math
+%Please view this section in browser
+
 \underbrace{\max_{\theta}~\mathbb{E}_{\substack{s\sim p_\mathsf{state}\\g \sim p_\mathsf{goal}}}[{
 \overbrace{d_\theta}^{\color[RGB]{230,97,0}\llap{\textsf{quasimetr}}\rlap{\textsf{ic model}}}}(s, g)]}_{\textsf{push apart {\color{teal}all state-goal pairs}}}
 \quad\quad \text{subject to}\qquad
@@ -52,7 +57,8 @@ mujoco==2.3.6
 ```
 
 > [!NOTE]
-> Both `d4rl` depends on `mujoco_py` which can be difficult to install. The code lazily imports `mujoco_py` and  `d4rl` if the user requests such environments. Therefore, their installation is not necessary to run the QRL algorithm, e.g., on a custom environment. However, running QRL on the provided environments (`d4rl.maze2d` and `GCRL`) requires them.
+> 
+> `d4rl` depends on `mujoco_py` which can be difficult to install. The code lazily imports `mujoco_py` and  `d4rl` if the user requests such environments. Therefore, their installation is not necessary to run the QRL algorithm, e.g., on a custom environment. However, running QRL on the provided environments (`d4rl.maze2d` and `GCRL`) requires them.
 
 ## Code structure
 

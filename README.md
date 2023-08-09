@@ -111,7 +111,6 @@ from quasimetric_rl.modules import QRLAgent, QRLConf
 
 
 expr_checkpoint = '/xxx/xx/xx/xxxx.pth'  # FIXME
-expr_checkpoint = '/data/vision/phillipi/rl_repr/qrl_public/online/results/gcrl_FetchPush/iqe(dim=2048,components=64)_dyn=0.1_actor(goal=Rand+Future,ent)_seed=60912/checkpoint_env01000000_opt00990500_final.pth'
 
 
 expr_dir = os.path.dirname(expr_checkpoint)

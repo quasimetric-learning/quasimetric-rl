@@ -13,9 +13,11 @@ args=(
     # dynamics
     agent.quasimetric_critic.model.latent_dynamics.arch="[1024,1024,1024]"
     agent.quasimetric_critic.losses.latent_dynamics.weight=1
-    # critic lr
+    # critic
     agent.quasimetric_critic.losses.critic_optim.lr=5e-4
     agent.quasimetric_critic.losses.critic_optim.cosine_lr_decay_final_mul=0
+    agent.quasimetric_critic.losses.global_push.softplus_beta=0.01
+    agent.quasimetric_critic.losses.global_push.softplus_offset=500
     # actor
     agent.actor.model.arch="[1024,1024,1024,1024]"
     agent.actor.losses.actor_optim.lr=3e-5

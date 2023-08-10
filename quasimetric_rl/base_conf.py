@@ -71,6 +71,7 @@ class BaseConf(abc.ABC):
         pass
 
     output_folder: Optional[str] = None
+    output_folder_suffix: Optional[str] = None
     output_dir: Optional[str] = attrs.field(default=None, init=False)
 
     @property
@@ -129,6 +130,8 @@ class BaseConf(abc.ABC):
             specs.append(
                 f'seed={self.seed}',
             )
+            if self.output_folder_suffix is not None:
+                specs.append(self.output_folder_suffix)
             self.output_folder = os.path.join(
                 f'{self.env.kind}_{self.env.name}',
                 '_'.join(specs),

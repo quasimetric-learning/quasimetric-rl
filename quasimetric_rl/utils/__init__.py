@@ -20,14 +20,13 @@ T = TypeVar('T')
 def singleton(cls: Type[T]) -> Type[T]:
     instance = None
 
-    @functools.wraps(cls)
-    def wrapped():
+    def __new__(subcls, *args, **kwargs):
         nonlocal instance
         if instance is None:
-            instance = cls()
+            instance = super(cls, subcls).__new__(subcls, *args, **kwargs)
         return instance
 
-    return wrapped
+    return type(cls.__name__, (cls,), {'__new__': __new__})
 
 
 def mkdir(path):

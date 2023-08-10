@@ -46,9 +46,7 @@ torch>=1.13.1
 tqdm
 numpy>=1.17.0
 imageio==2.6.1
-matplotlib
 gym==0.18.0
-tensorboardX>=2.5
 attrs>=21.4.0
 hydra-core==1.3.2
 omegaconf==2.3.0
@@ -57,7 +55,7 @@ mujoco==2.3.6
 ```
 
 > [!NOTE]
-> 
+>
 > `d4rl` depends on `mujoco_py` which can be difficult to install. The code lazily imports `mujoco_py` and  `d4rl` if the user requests such environments. Therefore, their installation is not necessary to run the QRL algorithm, e.g., on a custom environment. However, running QRL on the provided environments (`d4rl.maze2d` and `GCRL`) requires them.
 
 ## Code structure
@@ -105,7 +103,7 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 <summary><strong>
 Example code for how to load a trained checkpoint (click me)
 </strong></summary>
-    
+
 ```py
 import os
 import torch

@@ -4,17 +4,13 @@ import os
 
 import glob
 import attrs
-import yaml
 import logging
-import socket
-import subprocess
-import tempfile
 import time
 
 import hydra
 import hydra.types
 import hydra.core.config_store
-from omegaconf import OmegaConf, SCMode, DictConfig
+from omegaconf import DictConfig
 
 from tqdm.auto import tqdm
 import numpy as np
@@ -22,109 +18,31 @@ import torch
 import torch.backends.cudnn
 import torch.multiprocessing
 
-from tensorboardX import SummaryWriter
-
 import quasimetric_rl
 from quasimetric_rl import utils, pdb_if_DEBUG, FLAGS
 
 from quasimetric_rl.utils.steps_counter import StepsCounter
 from quasimetric_rl.modules import InfoT
+from quasimetric_rl.base_conf import BaseConf
+
 from .trainer import Trainer
-
-
-
-@attrs.define(kw_only=True, auto_attribs=True)
-class DeviceConfig:
-    type: str = 'cuda'
-    index: Optional[int] = 0
-
-    def make(self):
-        return torch.device(self.type, self.index)
 
 
 @utils.singleton
 @attrs.define(kw_only=True)
-class Conf:
-    # Disable hydra working directory creation
-    hydra: Dict = dict(
-        output_subdir=None,
-        job=dict(chdir=False),
-        run=dict(dir=tempfile.TemporaryDirectory().name),  # can't disable https://github.com/facebookresearch/hydra/issues/1937
-        mode=hydra.types.RunMode.RUN,  # sigh: https://github.com/facebookresearch/hydra/issues/2262
-    )
-
-    base_git_dir: str = subprocess.check_output(
-        r'git rev-parse --show-toplevel'.split(),
-        cwd=os.path.dirname(__file__), encoding='utf-8').strip()
-    git_commit: str = subprocess.check_output(
-        r'git rev-parse HEAD'.split(),
-        cwd=os.path.dirname(__file__), encoding='utf-8').strip()
-    git_status: Tuple[str] = tuple(
-        l.strip() for l in subprocess.check_output(
-            r'git status --short'.split(),
-            cwd=os.path.dirname(__file__), encoding='utf-8').strip().split('\n')
-        )
-
-    overwrite_output: bool = False
-    resume_if_possible: bool = True
+class Conf(BaseConf):
     output_base_dir: str = attrs.field(default=os.path.join(os.path.dirname(__file__), 'results'))
 
-    @output_base_dir.validator
-    def exists_path(self, attribute, value):
-        assert os.path.exists(value)
+    resume_if_possible: bool = False
 
-    output_folder: Optional[str] = None
-
-    @property
-    def output_dir(self) -> str:
-        return os.path.join(self.output_base_dir, self.output_folder)
-
-    device: DeviceConfig = DeviceConfig()
-
-    # Seeding
-    seed: int = 60912
-
-    # Env
     env: quasimetric_rl.data.Dataset.Conf = quasimetric_rl.data.Dataset.Conf()
-
-    # Agent
-    agent: quasimetric_rl.modules.QRLConf = quasimetric_rl.modules.QRLConf()
 
     batch_size: int = attrs.field(default=4096, validator=attrs.validators.gt(0))
     num_workers: int = attrs.field(default=8, validator=attrs.validators.ge(0))
-
     total_optim_steps: int = attrs.field(default=int(2e5), validator=attrs.validators.gt(0))
+
     log_steps: int = attrs.field(default=250, validator=attrs.validators.gt(0))
     save_steps: int = attrs.field(default=50000, validator=attrs.validators.gt(0))
-
-
-    def finalize(self):
-        if self.output_folder is None:
-            specs = [
-                self.agent.quasimetric_critic.model.quasimetric_model.quasimetric_head_spec,
-                f'dyn={self.agent.quasimetric_critic.losses.latent_dynamics.weight:g}',
-            ]
-            if self.agent.num_critics > 1:
-                specs.append(f'{self.agent.num_critics}critic')
-            if self.agent.actor is not None:
-                aspecs = []
-                if self.agent.actor.losses.min_dist.add_goal_as_future_state:
-                    aspecs.append('goal=Rand+Future')
-                else:
-                    aspecs.append('goal=Rand')
-                if self.agent.actor.losses.min_dist.adaptive_entropy_regularizer:
-                    aspecs.append('ent')
-                if self.agent.actor.losses.behavior_cloning.weight > 0:
-                    aspecs.append(f'BC={self.agent.actor.losses.behavior_cloning.weight:g}')
-                specs.append('actor(' + ','.join(aspecs) + ')')
-            specs.append(
-                f'seed={self.seed}',
-            )
-            self.output_folder = os.path.join(
-                f'{self.env.kind}_{self.env.name}',
-                '_'.join(specs),
-            )
-        utils.mkdir(self.output_dir)
 
 
 
@@ -135,54 +53,8 @@ cs.store(name='config', node=Conf())
 @pdb_if_DEBUG
 @hydra.main(version_base=None, config_name="config")
 def train(dict_cfg: DictConfig):
-    cfg: Conf = OmegaConf.to_container(dict_cfg, structured_config_mode=SCMode.INSTANTIATE)
-    cfg.finalize()
-
-    utils.logging.configure(os.path.join(cfg.output_dir, 'output.log'))
-    completion_file = os.path.join(cfg.output_dir, 'COMPLETE')
-    if os.path.exists(completion_file):
-        if cfg.overwrite_output:
-            logging.warning(f'Overwriting output directory {cfg.output_dir}')
-        else:
-            raise RuntimeError(f'Output directory {cfg.output_dir} exists and is complete')
-
-    torch.backends.cudnn.benchmark = True
-
-    # Log config
-    logging.info('')
-    logging.info(OmegaConf.to_yaml(cfg))
-    logging.info('')
-    logging.info(f'Running on {socket.getfqdn()}:')
-    logging.info(f'\t{"PID":<30}{os.getpid()}')
-    for var in ['CUDA_VISIBLE_DEVICES', 'EGL_DEVICE_ID']:
-        logging.info(f'\t{var:<30}{os.environ.get(var, None)}')
-    logging.info('')
-    logging.info(f'Output directory {cfg.output_dir}')
-    logging.info('')
-
-    with open(os.path.join(cfg.output_dir, 'config.yaml'), 'w') as f:
-        f.write(OmegaConf.to_yaml(cfg))
-
-    logging.info('')
-    logging.info(f'Base Git directory {cfg.base_git_dir}')
-    logging.info(f'Git COMMIT: {cfg.git_commit}')
-    logging.info(f'Git status:\n    ' + '\n    '.join(cfg.git_status))
-    with open(os.path.join(cfg.output_dir, 'git_summary.yaml'), 'w') as f:
-        f.write(yaml.safe_dump(dict(
-            base_dir=cfg.base_git_dir,
-            commit=cfg.git_commit,
-            status=cfg.git_status,
-        )))
-    with open(os.path.join(cfg.output_dir, f'git_{cfg.git_commit}.patch'), 'w') as f:
-        f.write(subprocess.getoutput(f'git diff {cfg.git_commit}'))
-    logging.info('')
-
-    writer = SummaryWriter(cfg.output_dir)
-
-    # Seeding
-    torch_seed, np_seed = utils.split_seed(cast(int, cfg.seed), 2)
-    np.random.seed(np.random.Generator(np.random.PCG64(np_seed)).integers(1 << 31))
-    torch.manual_seed(np.random.Generator(np.random.PCG64(torch_seed)).integers(1 << 31))
+    cfg: Conf = Conf.from_DictConfig(dict_cfg)
+    writer = cfg.setup_for_expriment()  # checking & setup logging
 
     dataset = cfg.env.make()
 
@@ -302,7 +174,7 @@ def train(dict_cfg: DictConfig):
                     writer.add_scalar("train/iter_time", iter_time, optim_steps)
 
     save(num_total_epochs, 0, suffix='final')
-    open(completion_file, 'a').close()
+    open(cfg.completion_file, 'a').close()
 
 
 if __name__ == '__main__':

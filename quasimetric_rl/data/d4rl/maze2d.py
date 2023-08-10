@@ -4,9 +4,7 @@ from typing import *
 import logging
 import functools
 
-import matplotlib.pyplot as plt
 import numpy as np
-import torch
 import torch.utils.data
 import gym
 import gym.spaces

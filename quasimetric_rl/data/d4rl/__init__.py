@@ -65,6 +65,7 @@ if TYPE_CHECKING:
 #-----------------------------------------------------------------------------#
 
 def load_environment(name: Union[str, gym.Env]) -> 'OfflineEnv':
+    lazy_init_d4rl()
     if type(name) != str:
         ## name is already an environment
         return name

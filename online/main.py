@@ -50,7 +50,7 @@ cs.store(name='config', node=Conf())
 @hydra.main(version_base=None, config_name="config")
 def train(dict_cfg: DictConfig):
     cfg: Conf = Conf.from_DictConfig(dict_cfg)
-    writer = cfg.setup_for_expriment()  # checking & setup logging
+    writer = cfg.setup_for_experiment()  # checking & setup logging
 
     replay_buffer = cfg.env.make()
 

@@ -98,7 +98,7 @@ class BaseConf(abc.ABC):
     def from_DictConfig(cls, cfg: DictConfig) -> 'BaseConf':
         return OmegaConf.to_container(cfg, structured_config_mode=SCMode.INSTANTIATE)
 
-    def setup_for_expriment(self) -> SummaryWriter:
+    def setup_for_experiment(self) -> SummaryWriter:
         r"""
         1. Finalize conf fields
         2. Do basic checks
@@ -107,7 +107,7 @@ class BaseConf(abc.ABC):
         """
 
         if self.output_dir is not None:
-            raise RuntimeError('setup_for_expriment() can only be called once')
+            raise RuntimeError('setup_for_experiment() can only be called once')
 
         if self.output_folder is None:
             specs = [

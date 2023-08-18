@@ -39,20 +39,9 @@ The code has been tested on
 
 + CUDA 11 with NVIDIA RTX Titan, NVIDIA 2080Ti, NVIDIA Titan XP, NVIDIA V100, and NVIDIA 3080.
 
-Software dependencies (also in [requirements.txt](./requirements.txt)):
+Software dependencies:
 
-```
-torch>=1.13.1
-tqdm
-numpy>=1.17.0
-imageio==2.6.1
-gym==0.18.0
-attrs>=21.4.0
-hydra-core==1.3.2
-omegaconf==2.3.0
-d4rl==1.1
-mujoco==2.3.6
-```
+https://github.com/quasimetric-learning/quasimetric-rl/blob/4f113239d7881eaba47844de7224a3c5736a4b6f/requirements.txt#L1-L10
 
 > [!NOTE]
 >

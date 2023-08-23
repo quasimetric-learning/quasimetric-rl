@@ -137,6 +137,18 @@ agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
 > 3. **Environment flag `QRL_DEBUG=1`** will enable additional checks and automatic `pdb.post_mortem`. It is your debugging friend.
 > 4. **Adding environments** can be done via `quasimetric_rl.data.register_(online|offline)_env`. See their docstrings for details. To construct an `quasimetric_rl.data.EpisodeData` from a  trajectory, see the `EpisodeData.from_simple_trajectory` helper constructor.
 
+## FAQ
+
+**Q:** How to run QRL where the goal is not a single state? <br>
+**A:** If more than one state are considered as "reaching a goal", then we can think of the goal as _a set of states_. In this case, we can use the trick discussed in paper Appendix A: (1) Encode this goal as a tensor of the same format as states (but distinct from them, e.g., via added indicator dimension). (2) Add transitions (<ins>state that reaches goal</ins> -> <ins>goal</ins>) whenever you reach the goal. QRL can extend to such general goals in this way. This can be implemented by either alternating the dataset storage and sampling code [more flexible but involved], or changing the environment to append a transition when reaching the goal [simpler]. **Coming soon:** example code on the later approach.
+
+**Q:** How to deal with variable-cost transitions? <br>
+**A:** Current code assumes that each transition incurs a fixed cost:
+  
+  https://github.com/quasimetric-learning/quasimetric-rl/blob/2fd47ba8901d6b0c4713a9167bb2ba9cd615ee43/quasimetric_rl/modules/quasimetric_critic/losses/local_constraint.py#L59-L61
+
+  To support variable-cost transitions, simply modify these lines to use `-data.rewards` as costs. However, you should make sure that your environment/dataset is set up to provide the expected non-positive rewards. We do not check that in current code.
+
 ## Citation
 Tongzhou Wang, Antonio Torralba, Phillip Isola, Amy Zhang. "Optimal Goal-Reaching Reinforcement Learning via Quasimetric Learning" International Conference on Machine Learning (ICML). 2023.
 

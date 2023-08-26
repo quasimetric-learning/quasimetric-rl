@@ -140,7 +140,7 @@ agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
 ## FAQ
 
 **Q:** How to run QRL where the goal is not a single state? <br>
-**A:** If more than one state are considered as "reaching a goal", then we can think of the goal as _a set of states_. In this case, we can use the trick discussed in paper Appendix A: (1) Encode this goal as a tensor of the same format as states (but distinct from them, e.g., via added indicator dimension). (2) Add transitions (<ins>state that reaches goal</ins> -> <ins>goal</ins>) whenever you reach the goal. QRL can extend to such general goals in this way. This can be implemented by either alternating the dataset storage and sampling code [more flexible but involved], or changing the environment to append a transition when reaching the goal [simpler]. **Coming soon:** example code on the later approach.
+**A:** If more than one state are considered as "reaching a goal", then we can think of the goal as _a set of states_. In this case, we can use the trick discussed in paper Appendix A: (1) Encode this goal as a tensor of the same format as states (but distinct from them, e.g., via an added indicator dimension). (2) Add transitions (<ins>state that reaches goal</ins> -> <ins>goal</ins>) whenever the agent reaches the goal. QRL can extend to such general goals in this way. This can be implemented by either modifying the dataset storage and sampling code [more flexible but involved], or changing the environment to append a transition when reaching the goal [simpler]. **Coming soon:** example code on the later approach.
 
 **Q:** How to deal with variable-cost transitions? <br>
 **A:** Current code assumes that each transition incurs a fixed cost:

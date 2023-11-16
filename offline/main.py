@@ -19,9 +19,6 @@ import quasimetric_rl
 from quasimetric_rl import FLAGS, pdb_if_DEBUG, utils
 from quasimetric_rl.base_conf import BaseConf
 from quasimetric_rl.modules import InfoT
-from quasimetric_rl.modules.quasimetric_critic.models.quasimetric_model import (
-    QuasimetricModel,
-)
 from quasimetric_rl.utils.steps_counter import StepsCounter
 
 from .trainer import Trainer

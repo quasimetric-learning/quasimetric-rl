@@ -1,25 +1,29 @@
-import glob
-import logging
-import os
-import time
 from typing import *
 
+import os
+
+import glob
 import attrs
+import logging
+import time
+
 import hydra
-import hydra.core.config_store
 import hydra.types
+import hydra.core.config_store
+from omegaconf import DictConfig
+
+from tqdm.auto import tqdm
 import numpy as np
 import torch
 import torch.backends.cudnn
 import torch.multiprocessing
-from omegaconf import DictConfig
-from tqdm.auto import tqdm
 
 import quasimetric_rl
-from quasimetric_rl import FLAGS, pdb_if_DEBUG, utils
-from quasimetric_rl.base_conf import BaseConf
-from quasimetric_rl.modules import InfoT
+from quasimetric_rl import utils, pdb_if_DEBUG, FLAGS
+
 from quasimetric_rl.utils.steps_counter import StepsCounter
+from quasimetric_rl.modules import InfoT
+from quasimetric_rl.base_conf import BaseConf
 
 from .trainer import Trainer
 

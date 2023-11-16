@@ -9,6 +9,77 @@ import torchqmet
 from ...utils import MLP, LatentTensor
 
 
+class InnerProduct(torchqmet.QuasimetricBase):
+    """Computes the inner product between two vectors."""
+
+    def __init__(
+        self,
+        input_size: int,
+    ) -> None:
+        super().__init__(
+            input_size,
+            num_components=1,
+            guaranteed_quasimetric=False,
+            transforms=[],
+            reduction="sum",
+            discount=None,
+        )
+
+    def compute_components(
+        self, x: torch.Tensor, y: torch.Tensor
+    ) -> torch.Tensor:
+        r"""
+        Inputs:
+            x (torch.Tensor): Shape [..., input_size]
+            y (torch.Tensor): Shape [..., input_size]
+
+        Output:
+            d (torch.Tensor): Shape [..., num_components]
+        """
+        return torch.sum(x * y, dim=-1, keepdim=True)
+
+
+class MLPHead(torchqmet.QuasimetricBase):
+    """MLP value function head that is not a guaranteed metric."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_sizes: Collection[int],
+        activation_fn: Type[nn.Module] = nn.ReLU,
+        zero_init_last_fc: bool = False,
+    ) -> None:
+        super().__init__(
+            input_size,
+            num_components=1,
+            guaranteed_quasimetric=False,
+            transforms=[],
+            reduction="sum",
+            discount=None,
+        )
+        self.mlp = MLP(
+            input_size=2 * input_size,
+            output_size=1,
+            hidden_sizes=hidden_sizes,
+            activation_fn=activation_fn,
+            zero_init_last_fc=zero_init_last_fc,
+        )
+
+    def compute_components(
+        self, x: torch.Tensor, y: torch.Tensor
+    ) -> torch.Tensor:
+        r"""
+        Inputs:
+            x (torch.Tensor): Shape [..., input_size]
+            y (torch.Tensor): Shape [..., input_size]
+
+        Output:
+            d (torch.Tensor): Shape [..., num_components]
+        """
+        xy = torch.cat([x, y], dim=-1)
+        return self.mlp(xy)
+
+
 class L2(torchqmet.QuasimetricBase):
     r"""
     This is a *metric* (not quasimetric) that is used for debugging & comparison.
@@ -18,7 +89,9 @@ class L2(torchqmet.QuasimetricBase):
         super().__init__(input_size, num_components=1, guaranteed_quasimetric=True,
                          transforms=[], reduction='sum', discount=None)
 
-    def compute_components(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    def compute_components(
+        self, x: torch.Tensor, y: torch.Tensor
+    ) -> torch.Tensor:
         r'''
         Inputs:
             x (torch.Tensor): Shape [..., input_size]
@@ -34,6 +107,8 @@ def create_quasimetric_head_from_spec(spec: str) -> torchqmet.QuasimetricBase:
     # Only two are supported
     #   1. iqe(dim=xxx,components=xxx), Interval Quasimetric Embedding
     #   2. l2(dim=xxx), L2 distance
+    #   3. mlp(dim=xxx,hidden_sizes=xxx,activation_fn=xxx,zero_init_last_fc=xxx), MLP head
+    #   4. inner_prod(dim=xxx), Inner product
 
     def iqe(*, dim: int, components: int) -> torchqmet.IQE:
         assert dim % components == 0, "IQE: dim must be divisible by components"
@@ -42,8 +117,24 @@ def create_quasimetric_head_from_spec(spec: str) -> torchqmet.QuasimetricBase:
     def l2(*, dim: int) -> L2:
         return L2(dim)
 
-    return eval(spec, dict(iqe=iqe, l2=l2), {})
+    def mlp(
+        *,
+        dim: int,
+        hidden_sizes: Collection[int],
+        activation_fn: Type[nn.Module] = nn.ReLU,
+        zero_init_last_fc: bool = False,
+    ) -> MLPHead:
+        return MLPHead(
+            input_size=dim,
+            hidden_sizes=hidden_sizes,
+            activation_fn=activation_fn,
+            zero_init_last_fc=zero_init_last_fc,
+        )
 
+    def inner_prod(*, dim: int) -> InnerProduct:
+        return InnerProduct(dim)
+
+    return eval(spec, dict(iqe=iqe, l2=l2, mlp=mlp, inner_prod=inner_prod), {})
 
 
 class QuasimetricModel(nn.Module):

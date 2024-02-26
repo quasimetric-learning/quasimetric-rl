@@ -18,7 +18,7 @@ class L2(torchqmet.QuasimetricBase):
         super().__init__(input_size, num_components=1, guaranteed_quasimetric=True,
                          transforms=[], reduction='sum', discount=None)
 
-    def compute_components(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    def compute_components(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         r'''
         Inputs:
             x (torch.Tensor): Shape [..., input_size]

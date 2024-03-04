@@ -8,6 +8,7 @@ args=(
     num_workers=12
     # encoder
     agent.quasimetric_critic.model.encoder.arch="[1024,1024,1024]"
+    agent.quasimetric_critic.model.encoder.latent_size=256
     # quasimetric model
     agent.quasimetric_critic.model.quasimetric_model.projector_arch="[1024,1024]"
     # dynamics
